@@ -113,17 +113,19 @@ export function DataTable({
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-semibold">{table.name}</h1>
-          <Badge variant="secondary">{table.records.length} records</Badge>
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-semibold text-foreground">{table.name}</h1>
+          <Badge variant="secondary" className="text-xs px-2 py-1 bg-muted text-muted-foreground font-medium">
+            {table.records.length} records
+          </Badge>
         </div>
         
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
             <Select value={filterConfig.fieldId} onValueChange={(value) => setFilterConfig(prev => ({ ...prev, fieldId: value }))}>
-              <SelectTrigger className="w-32 h-8">
+              <SelectTrigger className="w-36 h-8 border-0 bg-transparent shadow-none">
                 <SelectValue placeholder="Filter by..." />
               </SelectTrigger>
               <SelectContent>
@@ -137,14 +139,14 @@ export function DataTable({
                 placeholder="Filter value..."
                 value={filterConfig.value}
                 onChange={(e) => setFilterConfig(prev => ({ ...prev, value: e.target.value }))}
-                className="w-32 h-8"
+                className="w-36 h-8 border-0 bg-transparent shadow-none focus-visible:ring-0"
               />
             )}
           </div>
           
-          <Button onClick={onAddRecord} size="sm">
+          <Button onClick={onAddRecord} size="sm" className="bg-primary hover:bg-primary-hover text-primary-foreground font-medium">
             <Plus className="h-4 w-4 mr-2" />
-            Add Record
+            New
           </Button>
         </div>
       </div>
@@ -152,9 +154,9 @@ export function DataTable({
       {/* Table */}
       <div className="flex-1 overflow-auto">
         <table className="w-full">
-          <thead className="bg-table-header sticky top-0 z-10">
+          <thead className="bg-table-header sticky top-0 z-10 border-b border-table-border">
             <tr>
-              <th className="w-12 p-2 border-r border-table-border"></th>
+              <th className="w-14 px-3 py-3 border-r border-table-border/50"></th>
               {table.fields.map((field) => {
                 const IconComponent = fieldIcons[field.type];
                 const isSorted = sortConfig?.fieldId === field.id;
@@ -162,41 +164,41 @@ export function DataTable({
                 return (
                   <th
                     key={field.id}
-                    className="min-w-32 p-2 text-left border-r border-table-border last:border-r-0"
+                    className="min-w-40 px-3 py-3 text-left border-r border-table-border/50 last:border-r-0"
                   >
                     <div className="flex items-center justify-between group">
                       <div className="flex items-center gap-2">
                         <IconComponent className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium text-sm truncate">{field.name}</span>
-                        {field.required && <span className="text-destructive">*</span>}
+                        <span className="font-medium text-sm text-foreground truncate">{field.name}</span>
+                        {field.required && <span className="text-destructive text-xs">*</span>}
                       </div>
                       
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-6 w-6 p-0"
+                          className="h-7 w-7 p-0 hover:bg-muted/80 rounded-md"
                           onClick={() => handleSort(field.id)}
                         >
                           {isSorted ? (
                             sortConfig.direction === 'asc' ? 
-                            <SortAsc className="h-3 w-3" /> : 
-                            <SortDesc className="h-3 w-3" />
+                            <SortAsc className="h-3.5 w-3.5" /> : 
+                            <SortDesc className="h-3.5 w-3.5" />
                           ) : (
-                            <SortAsc className="h-3 w-3 text-muted-foreground" />
+                            <SortAsc className="h-3.5 w-3.5 text-muted-foreground" />
                           )}
                         </Button>
                         
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                              <MoreHorizontal className="h-3 w-3" />
+                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0 hover:bg-muted/80 rounded-md">
+                              <MoreHorizontal className="h-3.5 w-3.5" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Field Actions</DropdownMenuLabel>
+                          <DropdownMenuContent align="end" className="bg-popover border-border shadow-lg">
+                            <DropdownMenuLabel className="text-xs text-muted-foreground">Field Actions</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => onDeleteField(field.id)}>
+                            <DropdownMenuItem onClick={() => onDeleteField(field.id)} className="text-destructive">
                               <Trash2 className="h-4 w-4 mr-2" />
                               Delete Field
                             </DropdownMenuItem>
@@ -208,15 +210,15 @@ export function DataTable({
                 );
               })}
               
-              <th className="w-12 p-2">
+              <th className="w-14 px-3 py-3">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                      <Plus className="h-3 w-3" />
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 hover:bg-muted/80 rounded-md">
+                      <Plus className="h-4 w-4 text-muted-foreground" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Add Field</DropdownMenuLabel>
+                  <DropdownMenuContent align="end" className="bg-popover border-border shadow-lg">
+                    <DropdownMenuLabel className="text-xs text-muted-foreground">Add Field</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => handleAddField('text')}>
                       <Type className="h-4 w-4 mr-2" />
@@ -256,15 +258,15 @@ export function DataTable({
             {filteredRecords.map((record, index) => (
               <tr
                 key={record.id}
-                className="hover:bg-table-hover border-b border-table-border group"
+                className="hover:bg-table-hover border-b border-table-border/30 group transition-colors duration-150"
               >
-                <td className="p-2 border-r border-table-border text-center">
+                <td className="px-3 py-2 border-r border-table-border/50 text-center">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">{index + 1}</span>
+                    <span className="text-xs text-muted-foreground font-medium">{index + 1}</span>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-destructive/10 rounded-md"
                       onClick={() => onDeleteRecord(record.id)}
                     >
                       <Trash2 className="h-3 w-3 text-destructive" />
@@ -275,7 +277,7 @@ export function DataTable({
                 {table.fields.map((field) => (
                   <td
                     key={field.id}
-                    className="border-r border-table-border last:border-r-0"
+                    className="border-r border-table-border/50 last:border-r-0"
                   >
                     <EditableCell
                       field={field}
@@ -288,7 +290,7 @@ export function DataTable({
                   </td>
                 ))}
                 
-                <td className="p-2"></td>
+                <td className="px-3 py-2"></td>
               </tr>
             ))}
           </tbody>

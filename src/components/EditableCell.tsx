@@ -74,23 +74,43 @@ export function EditableCell({
         const option = field.options?.find(opt => opt.id === value);
         return option ? (
           <span
-            className="inline-flex items-center px-2 py-1 rounded text-xs font-medium"
-            style={{ backgroundColor: option.color + '20', color: option.color }}
+            className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium border"
+            style={{ 
+              backgroundColor: option.color + '15', 
+              color: option.color,
+              borderColor: option.color + '30'
+            }}
           >
             {option.label}
           </span>
         ) : (
-          <span className="text-muted-foreground">Select...</span>
+          <span className="text-muted-foreground text-sm">Select...</span>
         );
 
       case 'date':
-        return value ? format(new Date(value), 'MMM dd, yyyy') : '';
+        return value ? (
+          <span className="text-sm text-foreground">
+            {format(new Date(value), 'MMM dd, yyyy')}
+          </span>
+        ) : (
+          <span className="text-muted-foreground text-sm">Empty</span>
+        );
 
       case 'number':
-        return value?.toLocaleString() || '';
+        return value ? (
+          <span className="text-sm text-foreground font-mono">
+            {value.toLocaleString()}
+          </span>
+        ) : (
+          <span className="text-muted-foreground text-sm">Empty</span>
+        );
 
       default:
-        return value || '';
+        return value ? (
+          <span className="text-sm text-foreground">{value}</span>
+        ) : (
+          <span className="text-muted-foreground text-sm">Empty</span>
+        );
     }
   };
 
@@ -184,8 +204,8 @@ export function EditableCell({
   return (
     <div
       className={cn(
-        "min-h-8 flex items-center px-2 cursor-pointer hover:bg-table-hover rounded",
-        isEditing && "bg-background border border-ring",
+        "min-h-10 flex items-center px-3 py-2 cursor-pointer hover:bg-table-hover/60 transition-colors duration-150 group",
+        isEditing && "bg-background border border-ring rounded-md shadow-sm",
         className
       )}
       onClick={() => !isEditing && onStartEdit()}
