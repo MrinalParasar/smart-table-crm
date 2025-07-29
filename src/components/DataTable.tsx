@@ -17,7 +17,8 @@ import {
   Check,
   List,
   Mail,
-  Link
+  Link,
+  Minus
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -52,6 +53,7 @@ export function DataTable({
   const [editingCell, setEditingCell] = useState<{ recordId: string; fieldId: string } | null>(null);
   const [sortConfig, setSortConfig] = useState<{ fieldId: string; direction: 'asc' | 'desc' } | null>(null);
   const [filterConfig, setFilterConfig] = useState<{ fieldId: string; value: string }>({ fieldId: '', value: '' });
+  const [frozenColumns, setFrozenColumns] = useState<number>(0);
 
   const fieldIcons = {
     text: Type,
@@ -122,6 +124,32 @@ export function DataTable({
         </div>
         
         <div className="flex items-center gap-3">
+          {/* Frozen Columns Adjuster */}
+          <div className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2">
+            <span className="text-xs text-muted-foreground font-medium">Freeze</span>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 hover:bg-muted/80 rounded-md"
+                onClick={() => setFrozenColumns(Math.max(0, frozenColumns - 1))}
+                disabled={frozenColumns === 0}
+              >
+                <Minus className="h-3 w-3" />
+              </Button>
+              <span className="text-xs font-medium text-foreground min-w-[1rem] text-center">{frozenColumns}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 hover:bg-muted/80 rounded-md"
+                onClick={() => setFrozenColumns(Math.min(table.fields.length, frozenColumns + 1))}
+                disabled={frozenColumns >= table.fields.length}
+              >
+                <Plus className="h-3 w-3" />
+              </Button>
+            </div>
+          </div>
+
           <div className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <Select value={filterConfig.fieldId} onValueChange={(value) => setFilterConfig(prev => ({ ...prev, fieldId: value }))}>
@@ -156,15 +184,21 @@ export function DataTable({
         <table className="w-full">
           <thead className="bg-table-header sticky top-0 z-10 border-b border-table-border">
             <tr>
-              <th className="w-14 px-3 py-3 border-r border-table-border/50"></th>
-              {table.fields.map((field) => {
+              <th className="w-14 px-3 py-3 border-r border-table-border/50 sticky left-0 bg-table-header z-20"></th>
+              {table.fields.map((field, fieldIndex) => {
                 const IconComponent = fieldIcons[field.type];
                 const isSorted = sortConfig?.fieldId === field.id;
+                const isFrozen = fieldIndex < frozenColumns;
+                const leftOffset = isFrozen ? 56 + (fieldIndex * 160) : 'auto'; // 56px for row number column + 160px per frozen column
                 
                 return (
                   <th
                     key={field.id}
-                    className="min-w-40 px-3 py-3 text-left border-r border-table-border/50 last:border-r-0"
+                    className={cn(
+                      "min-w-40 px-3 py-3 text-left border-r border-table-border/50 last:border-r-0",
+                      isFrozen && "sticky bg-table-header z-10"
+                    )}
+                    style={isFrozen ? { left: `${leftOffset}px` } : undefined}
                   >
                     <div className="flex items-center justify-between group">
                       <div className="flex items-center gap-2">
@@ -260,7 +294,7 @@ export function DataTable({
                 key={record.id}
                 className="hover:bg-table-hover border-b border-table-border/30 group transition-colors duration-150"
               >
-                <td className="px-3 py-2 border-r border-table-border/50 text-center">
+                <td className="px-3 py-2 border-r border-table-border/50 text-center sticky left-0 bg-background z-10">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground font-medium">{index + 1}</span>
                     <Button
@@ -274,21 +308,30 @@ export function DataTable({
                   </div>
                 </td>
                 
-                {table.fields.map((field) => (
-                  <td
-                    key={field.id}
-                    className="border-r border-table-border/50 last:border-r-0"
-                  >
-                    <EditableCell
-                      field={field}
-                      value={record.data[field.id]}
-                      onChange={(value) => onUpdateRecord(record.id, field.id, value)}
-                      isEditing={editingCell?.recordId === record.id && editingCell?.fieldId === field.id}
-                      onStartEdit={() => setEditingCell({ recordId: record.id, fieldId: field.id })}
-                      onStopEdit={() => setEditingCell(null)}
-                    />
-                  </td>
-                ))}
+                {table.fields.map((field, fieldIndex) => {
+                  const isFrozen = fieldIndex < frozenColumns;
+                  const leftOffset = isFrozen ? 56 + (fieldIndex * 160) : 'auto';
+                  
+                   return (
+                     <td
+                       key={field.id}
+                       className={cn(
+                         "border-r border-table-border/50 last:border-r-0",
+                         isFrozen && "sticky bg-background z-10"
+                       )}
+                       style={isFrozen ? { left: `${leftOffset}px` } : undefined}
+                     >
+                       <EditableCell
+                         field={field}
+                         value={record.data[field.id]}
+                         onChange={(value) => onUpdateRecord(record.id, field.id, value)}
+                         isEditing={editingCell?.recordId === record.id && editingCell?.fieldId === field.id}
+                         onStartEdit={() => setEditingCell({ recordId: record.id, fieldId: field.id })}
+                         onStopEdit={() => setEditingCell(null)}
+                       />
+                     </td>
+                   );
+                 })}
                 
                 <td className="px-3 py-2"></td>
               </tr>
